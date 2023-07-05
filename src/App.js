@@ -10,36 +10,42 @@ import VerifyRoute from './component/Verifier/RouteVerifier';
 
 function App() {
   const [type, setType] = useState('');
-  const [login,isLogin] = useState(false);
+  // const [login,isLogin] = useState(false);
 
   const handleType = (t) => {
     setType(t);
-    isLogin(true);
+    
   };
-
+  
   const handleLogin = (s) => {
-    isLogin(false);
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.reload();
+    
   }
-  console.log(login,"Login");
+  useEffect(()=>{
+    const type=sessionStorage.getItem("Role");
+    setType(type);
+  },[])
 
 
 
   return (
     <div className="App">
-      {/* {type === 'user' && login ? (
+      {type === 'user'  ? (
         <UserRoute LoginUpdate={handleLogin} />
-      ) : type === 'admin' && login ? (
+      ) : type === 'admin' ? (
         <AdminRoute LoginUpdate={handleLogin} />
-      ) : type === 'labeller' && login ? (
+      ) : type === 'labeller' ? (
         <LabelRoute LoginUpdate={handleLogin} />
-      ) : type === 'verifier' && login ? (
+      ) : type === 'verifier' ? (
         <VerifyRoute LoginUpdate={handleLogin} />
-      ) : type === 'developer' && login ? (
+      ) : type === 'developer' ? (
         <DeveloperRoute LoginUpdate={handleLogin} />
       ) : (
         <PreloginRoute typeofUser={handleType} />
-      )} */}
-      <AdminRoute/>
+      )}
+      {/* <LabelRoute/> */}
     </div>
   );
 }

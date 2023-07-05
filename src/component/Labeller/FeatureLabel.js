@@ -1,20 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Web3 from 'web3';
 import ABI from '../ABI/ABI';
 import 'jquery/dist/jquery.min.js';
 import "datatables.net-dt/js/dataTables.dataTables";
 import "datatables.net-dt/css/jquery.dataTables.min.css";
 import $ from 'jquery';
-import { useEffect, useState } from "react";
-
 
 const FeatureLabel = () => {
-    let [account, setAccount] = useState("");
-    let [contractdata, setContractdata] = useState({});
-    let [data, setData] = useState([]);
-    let { ethereum } = window;
-    let [count, setCount] = useState(false);
-    let [transactionHash, setTransactionHash] = useState("");
+    const [account, setAccount] = useState("");
+    const [contractdata, setContractdata] = useState({});
+    const [data, setData] = useState([]);
+    const { ethereum } = window;
+    const [count, setCount] = useState(false);
+    const [transactionHash, setTransactionHash] = useState("");
+    const [from, setFrom] = useState('');
+    const [to, setTo] = useState('');
+    const [gas, setGas] = useState('');
+    const [featArr, setFeatArr] = useState([]);
+    const [featPriority, setFeatPriority] = useState([]);
+    const info = JSON.parse(localStorage.getItem('Info'));
 
     useEffect(() => {
         async function Connection() {
@@ -25,40 +29,64 @@ const FeatureLabel = () => {
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
             let temp = await contract.methods.SendFeatureReport().call();
-            temp = temp.filter((val, ind) => {
-                return val.priority === 'default'
-            });
-            console.log(temp, "default");
+            temp = temp.filter((val, ind) => val.priority === 'default').reverse();
             setData(temp);
             $(function () {
-                $('#Features-Label-Table').DataTable();
-            })
+                $('#Features-Label-Table').DataTable({
+                    paging: false
+                });
+            });
         }
         Connection();
-
     }, []);
-    const FeatArr = [];
-    const Featpriority = [];
+
     const SendFeatureReport = async () => {
-        for (let i = 0; i < data.length; i++) {
-            const priority_value = document.getElementById('feature-priority' + i).value;
-            if (priority_value !== '') {
-                FeatArr.push(data[i].feat_title);
-                Featpriority.push(priority_value);
-            }
-        }
-        const result = await contractdata.methods.SetPriorityFeature(FeatArr, Featpriority).send({ from: account });
+        const selectedFeatures = data.filter((val, ind) => {
+            const priority_value = document.getElementById(`feature-priority${ind}`).value;
+            return priority_value !== '';
+        });
+        const featArr = selectedFeatures.map(val => val.feat_title);
+        const featPriority = selectedFeatures.map((val, ind) => {
+            const priority_value = document.getElementById(`feature-priority${ind}`).value;
+            return priority_value;
+        });
+        setFeatArr(featArr);
+        setFeatPriority(featPriority);
+        const result = await contractdata.methods.SetPriorityFeature(featArr, featPriority).send({ from: account });
         setTransactionHash(result.transactionHash);
-        alert('Transaction Successful');
-    }
+        setFrom(result.from);
+        setTo(result.to);
+        setTransactionHash(result.transactionHash);
+        setGas(result.gasUsed);
+    };
+
     const handlePriorityChange = (index) => {
-        const priority_value = document.getElementById('feature-priority' + index).value;
-        if (priority_value !== '') {
-            setCount(true);
-        } else {
-            setCount(false);
-        }
-    }
+        const priority_value = document.getElementById(`feature-priority${index}`).value;
+        setCount(priority_value !== '');
+    };
+    const handleSubmit = async () => {
+        const UserTransction = {
+            account: account,
+            id: transactionHash,
+            description: 'Feature Title :' +featArr.join(', '),
+            from: from,
+            to: to,
+            gasUsed: gas,
+            email: info.email,
+            role: info.userType
+        };
+        //console.log(UserTransction);
+
+        const response = await fetch('http://localhost:2000/api/transcation', {
+            method: 'POST',
+            body: JSON.stringify(UserTransction),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const json = await response.json();
+    };
+
     return (
         <div className="container table-responsive">
             <table className="table table-light table-hover table-striped mt-3" id="Features-Label-Table">
@@ -71,27 +99,23 @@ const FeatureLabel = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {data.reverse().map((val, ind) => {
-                        return (
-                            <tr key={ind}>
-                                <td>{ind + 1}</td>
-                                <td>{val.feat_title}</td>
-                                <td>{val.feat_description.replace(/\n/g, '<br>')}</td>
-                                <td>
-                                    {<div>
-                                        <select className="form-select" onChange={() => handlePriorityChange(ind)} id={"feature-priority" + ind}>
-                                            <option value="">Select Priority</option>
-                                            <option value="High">High</option>
-                                            <option value="Medium">Medium</option>
-                                            <option value="Low">Low</option>
-                                        </select>
-                                    </div>
-
-                                    }
-                                </td>
-                            </tr>
-                        )
-                    })}
+                    {data.map((val, ind) => (
+                        <tr key={ind}>
+                            <td>{ind + 1}</td>
+                            <td>{val.feat_title}</td>
+                            <td>{val.feat_description.replace(/\n/g, '<br>')}</td>
+                            <td>
+                                <div>
+                                    <select className="form-select" onChange={() => handlePriorityChange(ind)} id={`feature-priority${ind}`}>
+                                        <option value="">Select Priority</option>
+                                        <option value="High">High</option>
+                                        <option value="Medium">Medium</option>
+                                        <option value="Low">Low</option>
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
             <input className="btn btn-primary m-2" type="submit" value="Feature Priority" onClick={SendFeatureReport} disabled={!count} />
@@ -101,8 +125,8 @@ const FeatureLabel = () => {
                         <h2>Transaction Details</h2>
                         <p>Transaction Hash: {transactionHash}</p>
                         <button type="submit" className="btn btn-primary mt-1" onClick={() => {
-                            window.location.reload(true);
-                            setTransactionHash("");
+                            handleSubmit()
+                            window.location.reload()
                         }}>Next Priority</button>
                     </div>
                 </div>

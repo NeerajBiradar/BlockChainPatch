@@ -11,7 +11,7 @@ const LoginPage = (props) => {
     const loginUser = async (e) => {
         e.preventDefault()
         const response = await fetch('http://localhost:2000/api/login', {
-            method: 'POST',
+            method: 'POST',   
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -21,9 +21,10 @@ const LoginPage = (props) => {
             }),
         })
         const data = await response.json()
-        //console.log(data.status)
+        //console.log(data)
         if(data.status === true){
-            console.log('Success');
+            //console.log('Success');
+            sessionStorage.setItem("Role",data.userType);
             props.typeUser(data.userType)
             if(data.userType=="admin"){
                 navigate('/Admin');
@@ -40,7 +41,7 @@ const LoginPage = (props) => {
             if(data.userType=="verifier"){
                 navigate('/Verifier');
             }
-        
+        localStorage.setItem('Info',JSON.stringify(data))
 
         }
         else{
@@ -62,7 +63,7 @@ const LoginPage = (props) => {
                     <form onSubmit={loginUser}>
                         <div className="mb-3 mt-3">
                             <label className="form-label">Email address(Only Lower Case)</label>
-                            <input type="email" onChange={(e) => SetEmail(e.target.value)}
+                            <input type="email" onChange={(e) => SetEmail(e.target.value.toLowerCase())}
                                 value={email} className="form-control" id="email" placeholder="name@example.com" />
                         </div>
                         <div className="mb-3">

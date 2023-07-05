@@ -5,17 +5,21 @@ import { useEffect, useState } from "react";
 
 const BugReport = () => {
     let [account, setAccount] = useState("");
-    let [contractdata, setContractdata] = useState({});
+    let [ contractdata, setContractdata] = useState({});
     let [transactionHash, setTransactionHash] = useState("");
     let [isFormFilled, setIsFormFilled] = useState(false);
     let { ethereum } = window;
+    let [from,setFrom] = useState('')
+    let [to,setTo] = useState('')
+    let [gas,setGas] = useState('')
+    const info = JSON.parse(localStorage.getItem('Info'))
 
     useEffect(() => {
         async function Connection() {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0xC73b335Daeb32f4df2635aA821A4B8532a18EC9c";
+            const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
         }
@@ -25,17 +29,19 @@ const BugReport = () => {
         const bug_title = document.getElementById("bug-title").value;
         const bug_description = document.getElementById("bug-description").value;
 
-        if (account.toLowerCase() === '0xcfca6ef8c30b803ecd38a98c61c52d9d8f9bc8ba' && isFormFilled) {
+        if (isFormFilled) {
             const result = await contractdata.methods.ReciveBugReport(bug_title, bug_description).send({ from: account });
-            setTransactionHash(result.transactionHash);
-            alert('Transaction Successful');
+            setFrom(result.from)
+            setTo(result.to)
+            setTransactionHash(result.transactionHash)
+            setGas(result.gasUsed)
         }
-        else {
-            alert("Transaction Unsuccessful! User account does not match or form is not filled");
-            const form = document.getElementById('Bug-form-id');
-            form.reset();
-            setIsFormFilled(false);
-        }
+        // else {
+        //     alert("Transaction Unsuccessful! User account does not match or form is not filled");
+        //     const form = document.getElementById('Bug-form-id');
+        //     form.reset();
+        //     setIsFormFilled(false);
+        // }
     }
 
     const handleFormChange = () => {
@@ -48,6 +54,27 @@ const BugReport = () => {
         }
     }
 
+    const handleSubmit = async () => {
+        const UserTransction = {
+          account: account,
+          id: transactionHash,
+          description : 'Bug title : '+ document.getElementById('bug-title').value,
+          from : from,
+          to : to,
+          gasUsed : gas,
+          email : info.email,
+          role : info.userType
+        };
+    
+        const response = await fetch('http://localhost:2000/api/transcation', {
+          method: 'POST',
+          body: JSON.stringify(UserTransction),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        const json = await response.json()
+    }
     return (
         <div className="container">
             <div className="row">
@@ -63,19 +90,20 @@ const BugReport = () => {
                             <textarea className="form-control mt-1" id="bug-description" name="bug-description" rows="5" onChange={handleFormChange} required></textarea>
                         </div>
                     </form>
-                    <button type="submit" className="btn btn-primary mt-2" onClick={SendBugReport} disabled={!isFormFilled}>Submit</button>
+                    <button type="submit" className="btn btn-primary mt-2" onClick={SendBugReport} disabled={!isFormFilled}>Confirm Transaction</button>
                 </div>
             </div>
             {transactionHash && (
                 <div className="row mt-5">
                     <div className="col-12">
-                        <h2>Transaction Details</h2>
+                        <h2>Transaction Done</h2>
                         <p>Transaction Hash: {transactionHash}</p>
                         <button type="submit" className="btn btn-primary mt-2" onClick={() => {
+                            handleSubmit();
                             const form = document.getElementById('Bug-form-id');
                             form.reset();
                             setTransactionHash("");
-                        }}>New Bug Report</button>
+                        }}>Submit</button>
                     </div>
                 </div>
             )}

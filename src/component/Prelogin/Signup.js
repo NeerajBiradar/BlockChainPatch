@@ -36,7 +36,7 @@ const ImageAndForm = () => {
       SetEmail('')
       SetPassword('')
       SetError(null)
-      console.log("New User Added", json)
+      //console.log("New User Added", json)
     }
   }
 

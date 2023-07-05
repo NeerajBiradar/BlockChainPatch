@@ -15,8 +15,13 @@ const PatchRequestForm = () => {
   let [feature_data, setFeatureData] = useState([]);
   let { ethereum } = window;
   let [Bugcheck, BugisChecked] = useState(false);
-  let [Featurecheck,FeatureisChecked] = useState(false);
+  let [Featurecheck, FeatureisChecked] = useState(false);
   let [transactionHash, setTransactionHash] = useState("");
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [gas, setGas] = useState('');
+  const info = JSON.parse(localStorage.getItem('Info'));
+  const [name,setName] = useState("")
 
   useEffect(() => {
     async function Connection() {
@@ -29,22 +34,22 @@ const PatchRequestForm = () => {
       let tempbug_data = await contract.methods.SendBugReport().call();
       let tempfeature_data = await contract.methods.SendFeatureReport().call();
       //console.log(tempbug_data);
-      tempbug_data = tempbug_data.filter((val, ind) => {
-        return val.priority != "default" && val.labelbugs == 0
-      });
+      tempbug_data = tempbug_data.filter((val, ind) => val.priority != "default" && val.labelbugs == 0).reverse()
       //console.log(tempbug_data);
 
       setBugData(tempbug_data);
-      tempfeature_data = tempfeature_data.filter((val, ind) => {
-        return val.priority != "default" && val.labelfeatures == 0
-      });
+      tempfeature_data = tempfeature_data.filter((val, ind) => val.priority != "default" && val.labelfeatures == 0).reverse()
       setFeatureData(tempfeature_data);
 
       $(function () {
-        $('#Bug-Table').DataTable();
+        $('#Bug-Table').DataTable({
+          paging: false
+        });
       })
       $(function () {
-        $('#Feature-Table').DataTable();
+        $('#Feature-Table').DataTable({
+          paging: false
+        });
       })
     }
     Connection();
@@ -69,25 +74,50 @@ const PatchRequestForm = () => {
       }
     }
     const patch_name = document.getElementById('Patch-Name').value;
+    setName(patch_name)
     const deadline = document.getElementById('deadline').value;
-    console.log(BugArr, FeatArr, patch_name, deadline);
+    //console.log(BugArr, FeatArr, patch_name, deadline);
     const temp = BugArr.length + FeatArr.length;
-    if( temp>0 && patch_name.trim()!='' && deadline.trim()!=''){
+    if (temp > 0 && patch_name.trim() != '' && deadline.trim() != '') {
       if (account.toLowerCase() == '0x47fb4385f5c205b59033d72330cd9e795626904c') {
         const result = await contractdata.methods.SetPatch(BugArr, FeatArr, patch_name, deadline).send({ from: account });
         setTransactionHash(result.transactionHash);
-        alert('Transcation Successful');
+        setFrom(result.from);
+        setTo(result.to);
+        setTransactionHash(result.transactionHash);
+        setGas(result.gasUsed);
       }
       else {
         alert('Transcation Unsuccessful! Admin account does not match');
       }
     }
-    else{
+    else {
       alert("Make sure every field is selected");
     }
-    
-
   }
+
+  const handleSubmit = async () => {
+    const UserTransction = {
+        account: account,
+        id: transactionHash,
+        description: 'Patch Requested :' + name,
+        from: from,
+        to: to,
+        gasUsed: gas,
+        email: info.email,
+        role: info.userType
+    };
+    console.log(UserTransction);
+
+    const response = await fetch('http://localhost:2000/api/transcation', {
+        method: 'POST',
+        body: JSON.stringify(UserTransction),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    const json = await response.json();
+};
 
   return (
     < div className='container' >
@@ -103,7 +133,7 @@ const PatchRequestForm = () => {
               </tr>
             </thead>
             <tbody className="table-group-divider">
-              {bug_data.reverse().map((val, ind) => {
+              {bug_data.map((val, ind) => {
                 return (
                   <tr key={ind}>
                     <td>{ind + 1}</td>
@@ -131,7 +161,7 @@ const PatchRequestForm = () => {
               </tr>
             </thead>
             <tbody className="table-group-divider">
-              {feature_data.reverse().map((val, ind) => {
+              {feature_data.map((val, ind) => {
                 return (
                   <tr key={ind}>
                     <td>{ind + 1}</td>
@@ -140,7 +170,7 @@ const PatchRequestForm = () => {
                       {val.priority}
                     </td>
                     <td>
-                      <input type="checkbox" name="myCheckbox" id={`checkbox-f-${ind}`}/>
+                      <input type="checkbox" name="myCheckbox" id={`checkbox-f-${ind}`} />
                     </td>
                   </tr>
                 )
@@ -180,16 +210,16 @@ const PatchRequestForm = () => {
           </div>
         </div>
       </div>
-      <button type="submit" className="btn btn-primary mt-2" onClick={SendTeamBugReport}>Submit</button>
+      <button type="submit" className="btn btn-primary mt-2" onClick={SendTeamBugReport}>Confirm Transaction</button>
       {transactionHash && (
         <div className="row mt-5">
           <div className="col-12">
             <h2>Transaction Details</h2>
             <p>Transaction Hash: {transactionHash}</p>
             <button type="submit" className="btn btn-primary mt-1" onClick={() => {
-              window.location.reload(true);
-              setTransactionHash("");
-            }}>New Patch</button>
+              handleSubmit()
+              //window.location.reload();
+            }}>Submit</button>
           </div>
         </div>
       )}

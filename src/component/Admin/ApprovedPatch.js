@@ -18,7 +18,7 @@ const ApprovedPatch = () => {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0xC73b335Daeb32f4df2635aA821A4B8532a18EC9c";
+            const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
             let temp = await contract.methods.Developer().call();
