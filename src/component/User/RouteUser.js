@@ -5,6 +5,7 @@ import BugReport from './Bug';
 import User from './UserHome';
 import Download from './Download';
 import LoginPage from '../Prelogin/LoginPage';
+import TransactionDetails from './Transcation';
 
 
 function UserRoute(props) {
@@ -16,11 +17,12 @@ function UserRoute(props) {
             <Router>
                 <UserNavbar LoginState={handleLogin}/>
                 <Routes>
-                    <Route path='/User' element={<User/>} />
-                    <Route path='/FeatureReport' element={<FeatureReport/>} />
-                    <Route path='/BugReport' element={<BugReport/>} />
-                    <Route path='/DownloadPatch' element={<Download/>} />
-                    <Route path='/Login' element={<LoginPage/>} />
+                    <Route path='/user' element={<User/>} />
+                    <Route path='/featurereport' element={<FeatureReport/>} />
+                    <Route path='/bugreport' element={<BugReport/>} />
+                    <Route path='/downloadpatch' element={<Download/>} />
+                    <Route path='/login' element={<LoginPage/>} />
+                    <Route path='/transcations' element={<TransactionDetails/>}/>
                 </Routes>
             </Router>
         </div>

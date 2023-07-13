@@ -6,6 +6,7 @@ import RejectedPatch from './RejectedPatch';
 import DeployedPatch from './DeployedPatch';
 import LoginPage from '../Prelogin/LoginPage';
 import IntroductionPage from './AdminHome';
+import TransactionDetails from './Transcation';
 
 function AdminRoute(props) {
     const handleLogin = (s) =>{
@@ -16,12 +17,13 @@ function AdminRoute(props) {
             <Router>
                 <AdminNavbar LoginState={handleLogin} />
                 <Routes>
-                    <Route path='/Admin' element={<IntroductionPage/>}/>
-                    <Route path='/PatchRequest' element={<PatchRequest/>}/>
-                    <Route path='/ApprovedPatches' element={<ApprovedPatch/>} />
-                    <Route path='/RejectedPatches' element={<RejectedPatch/>} />
-                    <Route path='/DeployedPatches' element={<DeployedPatch/>} />
-                    <Route path='/Login' element={<LoginPage/>} />
+                    <Route path='/admin' element={<IntroductionPage/>}/>
+                    <Route path='/patchrequest' element={<PatchRequest/>}/>
+                    <Route path='/approvedpatches' element={<ApprovedPatch/>} />
+                    <Route path='/rejectedpatches' element={<RejectedPatch/>} />
+                    <Route path='/deployedpatches' element={<DeployedPatch/>} />
+                    <Route path='/transcations' element={<TransactionDetails/>}/>
+                    <Route path='/login' element={<LoginPage/>} />
                 </Routes>
             </Router>
         </div>

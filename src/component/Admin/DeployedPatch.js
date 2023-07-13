@@ -1,9 +1,7 @@
 import React from "react";
 import Web3 from 'web3';
 import ABI from '../ABI/ABI';
-import 'jquery/dist/jquery.min.js';
-import "datatables.net-dt/js/dataTables.dataTables"
-import "datatables.net-dt/css/jquery.dataTables.min.css"
+
 import $ from 'jquery';
 import { useEffect, useState } from "react";
 
@@ -17,13 +15,11 @@ const DeployedPatch = () => {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
+            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
             let temp = await contract.methods.Developer().call();
-            temp = temp.filter((val, ind) => {
-                return val.deploy == 'deployed'
-            });
+            temp = temp.filter((val, ind) =>val.deploy == 'deployed').reverse()
             setData(temp);
             $(function () {
                 $('#Deployed-Table').DataTable();
@@ -48,8 +44,9 @@ const DeployedPatch = () => {
 
     return (
         <div className="container table-responsive">
+            <h1 className="my-3">Deployed Patch</h1>
             <table className="table table-light table-striped mt-3" id="Deployed-Table">
-                <thead className="table-primary">
+                <thead className="table-dark">
                     <tr>
                         <th scope="col" style={{ width: '5%' }}>S.No</th>
                         <th scope="col" style={{ width: '10%' }}>Patch Name</th>
@@ -59,7 +56,7 @@ const DeployedPatch = () => {
                     </tr>
                 </thead>
                 <tbody className="table-group-divider">
-                    {data.reverse().map((val, ind) => {
+                    {data.map((val, ind) => {
                         return (
                             <tr key={ind}>
                                 <td>{ind + 1}</td>

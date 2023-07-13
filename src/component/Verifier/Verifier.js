@@ -14,19 +14,23 @@ const Verify = () => {
     let [data, setData] = useState([]);
     let [transactionHash, setTransactionHash] = useState("");
     let { ethereum } = window;
+    const [from, setFrom] = useState('');
+    const [to, setTo] = useState('');
+    const [gas, setGas] = useState('');
+    const info = JSON.parse(localStorage.getItem('Info'));
+    const [name, setName] = useState("")
+    const [status,setStatus] = useState("")
 
     useEffect(() => {
         async function Connection() {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
+            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
             let temp = await contract.methods.Developer().call();
-            temp = temp.filter((val, ind) => {
-                return val.check === "None"
-            });
+            temp = temp.filter((val, ind) => val.uploadtime !== "up" && val.check === 'None').reverse()
             console.log(temp, "Verify");
             setData(temp);
             $(function () {
@@ -41,14 +45,16 @@ const Verify = () => {
         const Time = timestamp.toString();
         console.log(name, Time, Status);
         // deploybutton.innerHTML = Time;  
-        if (account === '0x47fb4385f5c205b59033d72330cd9e795626904c') {
-            const result = await contractdata.methods.SetPatchcheck(name, Status, Time).send({ from: account });
-            setTransactionHash(result.transactionHash);
-            alert('Transcation Successful');
-        }
-        else {
-            console.log('Transcation Unsuccessful! Admin account does not match');
-        }
+
+        const result = await contractdata.methods.SetPatchcheck(name, Status, Time).send({ from: account });
+        setTransactionHash(result.transactionHash);
+        //alert('Transcation Successful');
+        setFrom(result.from);
+        setTo(result.to);
+        setTransactionHash(result.transactionHash);
+        setGas(result.gasUsed);
+        setName(name)
+        setStatus(Status)
     }
 
     function handledownload(varible) {
@@ -63,11 +69,38 @@ const Verify = () => {
         // Simulate a click on the download link
         downloadLink.click();
     }
+    const handleSubmit = async () => {
+        const UserTransction = {
+            account: account,
+            id: transactionHash,
+            description: 'Patch '+status+': '+name ,
+            from: from,
+            to: to,
+            gasUsed: gas,
+            email: info.email,
+            role: info.userType
+        };
+        console.log(UserTransction);
 
-
-
+        const response = await fetch('http://localhost:2000/api/transcation', {
+            method: 'POST',
+            body: JSON.stringify(UserTransction),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const json = await response.json();
+    };
+    useEffect(() => {
+        if (transactionHash) {
+            const submitButton = document.getElementById("submit-button");
+            if (submitButton) {
+                submitButton.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+    }, [transactionHash]);
     return (
-        <div className="container table-responsive">
+        <div className="container table-responsive my-2">
             <table className="table table-light table-striped table-hover mt-3" id="Verify-Table">
                 <thead className="table-dark">
                     <tr>
@@ -80,7 +113,7 @@ const Verify = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {data.reverse().map((val, ind) => {
+                    {data.map((val, ind) => {
                         return (
                             <tr key={ind}>
                                 <td>{ind + 1}</td>
@@ -125,10 +158,10 @@ const Verify = () => {
                     <div className="col-12">
                         <h2>Transaction Details</h2>
                         <p>Transaction Hash: {transactionHash}</p>
-                        <button type="submit" className="btn btn-primary mt-2"onClick={() => {
-              window.location.reload(true);
-              setTransactionHash("");
-            }}>New Verify</button>
+                        <button id="submit-button" type="submit" className="btn btn-primary mt-2" onClick={() => {
+                            handleSubmit()
+                            window.location.reload(true);
+                        }}>Submit</button>
                     </div>
                 </div>
             )}

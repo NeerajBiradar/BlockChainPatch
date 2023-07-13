@@ -4,6 +4,7 @@ import DeveloperNavabar from './DeveloperNavbar'
 import IntroductionPage from './DeveloperHome';
 import Upload from './DeveloperUpload';
 import LoginPage from '../Prelogin/LoginPage';
+import TransactionDetails from './Transcation';
 
 function DeveloperRoute(props) {
     const handleLogin = (s) =>{
@@ -14,10 +15,11 @@ function DeveloperRoute(props) {
             <Router>
                 <DeveloperNavabar LoginState={handleLogin}/>
                 <Routes>
-                    <Route path='/Developer' element={<IntroductionPage/>}/>
-                    <Route path='/UploadPatch' element={<DeveloperTable/>} />
-                    <Route path='/Upload' element={<Upload/>}/>
-                    <Route path='/Login' element={<LoginPage/>} />
+                    <Route path='/developer' element={<IntroductionPage/>}/>
+                    <Route path='/uploadpatch' element={<DeveloperTable/>} />
+                    <Route path='/upload' element={<Upload/>}/>
+                    <Route path='/login' element={<LoginPage/>} />
+                    <Route path='/transcations' element={<TransactionDetails/>}/>
                 </Routes>
             </Router>
         </div>

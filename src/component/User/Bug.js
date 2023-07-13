@@ -1,17 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Web3 from 'web3';
 import ABI from "../ABI/ABI";
-import { useEffect, useState } from "react";
 
 const BugReport = () => {
     let [account, setAccount] = useState("");
-    let [ contractdata, setContractdata] = useState({});
+    let [contractdata, setContractdata] = useState({});
     let [transactionHash, setTransactionHash] = useState("");
     let [isFormFilled, setIsFormFilled] = useState(false);
     let { ethereum } = window;
-    let [from,setFrom] = useState('')
-    let [to,setTo] = useState('')
-    let [gas,setGas] = useState('')
+    let [from, setFrom] = useState('');
+    let [to, setTo] = useState('');
+    let [gas, setGas] = useState('');
     const info = JSON.parse(localStorage.getItem('Info'))
 
     useEffect(() => {
@@ -19,30 +18,24 @@ const BugReport = () => {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
+            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
         }
-        Connection(); 
+        Connection();
     }, []);
+
     const SendBugReport = async () => {
         const bug_title = document.getElementById("bug-title").value;
         const bug_description = document.getElementById("bug-description").value;
-
         if (isFormFilled) {
             const result = await contractdata.methods.ReciveBugReport(bug_title, bug_description).send({ from: account });
-            setFrom(result.from)
-            setTo(result.to)
-            setTransactionHash(result.transactionHash)
-            setGas(result.gasUsed)
+            setFrom(result.from);
+            setTo(result.to);
+            setTransactionHash(result.transactionHash);
+            setGas(result.gasUsed);
         }
-        // else {
-        //     alert("Transaction Unsuccessful! User account does not match or form is not filled");
-        //     const form = document.getElementById('Bug-form-id');
-        //     form.reset();
-        //     setIsFormFilled(false);
-        // }
-    }
+    };
 
     const handleFormChange = () => {
         const bug_title = document.getElementById("bug-title").value;
@@ -52,29 +45,39 @@ const BugReport = () => {
         } else {
             setIsFormFilled(false);
         }
-    }
+    };
 
     const handleSubmit = async () => {
         const UserTransction = {
-          account: account,
-          id: transactionHash,
-          description : 'Bug title : '+ document.getElementById('bug-title').value,
-          from : from,
-          to : to,
-          gasUsed : gas,
-          email : info.email,
-          role : info.userType
+            account: account,
+            id: transactionHash,
+            description: 'Bug title : ' + document.getElementById('bug-title').value,
+            from: from,
+            to: to,
+            gasUsed: gas,
+            email: info.email,
+            role: info.userType
         };
-    
+
         const response = await fetch('http://localhost:2000/api/transcation', {
-          method: 'POST',
-          body: JSON.stringify(UserTransction),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        const json = await response.json()
-    }
+            method: 'POST',
+            body: JSON.stringify(UserTransction),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const json = await response.json();
+    };
+
+    useEffect(() => {
+        if (transactionHash) {
+            const submitButton = document.getElementById("submit-button");
+            if (submitButton) {
+                submitButton.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+    }, [transactionHash]);
+
     return (
         <div className="container">
             <div className="row">
@@ -90,7 +93,7 @@ const BugReport = () => {
                             <textarea className="form-control mt-1" id="bug-description" name="bug-description" rows="5" onChange={handleFormChange} required></textarea>
                         </div>
                     </form>
-                    <button type="submit" className="btn btn-primary mt-2" onClick={SendBugReport} disabled={!isFormFilled}>Confirm Transaction</button>
+                    <button type="submit" className="btn btn-primary mt-2" onClick={SendBugReport} disabled={!isFormFilled}>Report Bug</button>
                 </div>
             </div>
             {transactionHash && (
@@ -98,17 +101,15 @@ const BugReport = () => {
                     <div className="col-12">
                         <h2>Transaction Done</h2>
                         <p>Transaction Hash: {transactionHash}</p>
-                        <button type="submit" className="btn btn-primary mt-2" onClick={() => {
+                        <button id="submit-button" type="submit" className="btn btn-primary mt-2" onClick={() => {
                             handleSubmit();
-                            const form = document.getElementById('Bug-form-id');
-                            form.reset();
-                            setTransactionHash("");
+                            window.location.reload()
                         }}>Submit</button>
                     </div>
                 </div>
             )}
         </div>
     );
-}
+};
 
 export default BugReport;

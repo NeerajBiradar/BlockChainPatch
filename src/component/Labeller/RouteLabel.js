@@ -4,6 +4,7 @@ import FeatureLabel from './FeatureLabel';
 import LabelNavbar from './LabelNavbar';
 import LoginPage from '../Prelogin/LoginPage';
 import IntroductionPage from './LabelHome';
+import TransactionDetails from './Transcation';
 
 function LabelRoute(props) {
     const handleLogin = (s) =>{
@@ -14,10 +15,11 @@ function LabelRoute(props) {
             <Router>
                 <LabelNavbar LoginState={handleLogin} />
                 <Routes>
-                    <Route path='/Label' element={<IntroductionPage />} />
-                    <Route path='/BugLabel' element={<BugLabel />} />
-                    <Route path='/FeatureLabel' element={<FeatureLabel />} />
-                    <Route path='/Login' element={<LoginPage />} />
+                    <Route path='/labeller' element={<IntroductionPage />} />
+                    <Route path='/buglabel' element={<BugLabel />} />
+                    <Route path='/featurelabel' element={<FeatureLabel />} />
+                    <Route path='/transcations' element={<TransactionDetails/>} />
+                    <Route path='/login' element={<LoginPage />} />
                 </Routes>
             </Router>
         </div>

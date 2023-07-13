@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-//import { Link, useNavigate } from 'react-router-dom';
-
 import PreloginRoute from './component/Prelogin/RoutePrelogin';
 import AdminRoute from './component/Admin/RouteAdmin';
 import UserRoute from './component/User/RouteUser';
@@ -10,7 +8,6 @@ import VerifyRoute from './component/Verifier/RouteVerifier';
 
 function App() {
   const [type, setType] = useState('');
-  // const [login,isLogin] = useState(false);
 
   const handleType = (t) => {
     setType(t);
@@ -45,7 +42,6 @@ function App() {
       ) : (
         <PreloginRoute typeofUser={handleType} />
       )}
-      {/* <LabelRoute/> */}
     </div>
   );
 }

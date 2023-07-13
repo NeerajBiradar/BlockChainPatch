@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom'
-import PatchRequest from '../Admin/PatchRequest';
+
 
 const LoginPage = (props) => {
     const navigate = useNavigate();
@@ -26,20 +25,20 @@ const LoginPage = (props) => {
             //console.log('Success');
             sessionStorage.setItem("Role",data.userType);
             props.typeUser(data.userType)
-            if(data.userType=="admin"){
-                navigate('/Admin');
+            if(data.userType==="admin"){
+                navigate('/admin');
             }
-            if(data.userType=="user"){
-                navigate('/User');
+            if(data.userType==="user"){
+                navigate('/user');
             }
-            if(data.userType=="labeller"){
-                navigate('/Label');
+            if(data.userType==="labeller"){
+                navigate('/labeller');
             }
-            if(data.userType=="developer"){ 
-                navigate('/Developer');
+            if(data.userType==="developer"){ 
+                navigate('/developer');
             }
-            if(data.userType=="verifier"){
-                navigate('/Verifier');
+            if(data.userType==="verifier"){
+                navigate('/verifier');
             }
         localStorage.setItem('Info',JSON.stringify(data))
 
@@ -62,7 +61,7 @@ const LoginPage = (props) => {
                     <h2 >Login Page</h2>
                     <form onSubmit={loginUser}>
                         <div className="mb-3 mt-3">
-                            <label className="form-label">Email address(Only Lower Case)</label>
+                            <label className="form-label">Email address</label>
                             <input type="email" onChange={(e) => SetEmail(e.target.value.toLowerCase())}
                                 value={email} className="form-control" id="email" placeholder="name@example.com" />
                         </div>
@@ -73,11 +72,11 @@ const LoginPage = (props) => {
                         </div>
                         <button type="submit" className="btn btn-primary">Login</button>
                         {/* {error && <div className='error'>{error}</div>} */}
+                        <p className='mt-2 text-danger-emphasis' id="inCorrect_details"></p>
                         <p className="mt-4">By clicking the "Log in" button, you are creating an account, and agree to Group-36's Terms of Service and Privacy Policy</p>
                         <p className="mt-3">Need an account?
                             <Link to="/Signup"> Sign up</Link>
                         </p>
-                        <p className='mt-2 text-dark-emphasis' id="inCorrect_details"></p>
                     </form>
                 </div>
             </div>

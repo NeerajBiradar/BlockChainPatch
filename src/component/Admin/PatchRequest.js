@@ -1,9 +1,6 @@
 import React from "react";
 import Web3 from 'web3';
 import ABI from '../ABI/ABI';
-import 'jquery/dist/jquery.min.js';
-import "datatables.net-dt/js/dataTables.dataTables"
-import "datatables.net-dt/css/jquery.dataTables.min.css"
 import $ from 'jquery';
 import { useEffect, useState } from "react";
 
@@ -21,14 +18,14 @@ const PatchRequestForm = () => {
   const [to, setTo] = useState('');
   const [gas, setGas] = useState('');
   const info = JSON.parse(localStorage.getItem('Info'));
-  const [name,setName] = useState("")
+  const [name, setName] = useState("")
 
   useEffect(() => {
     async function Connection() {
       let accounts = await ethereum.request({ method: "eth_requestAccounts" });
       setAccount(accounts[0]);
       const web3 = new Web3(window.ethereum);
-      const Address = "0xC73b335Daeb32f4df2635aA821A4B8532a18EC9c";
+      const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
       let contract = new web3.eth.Contract(ABI, Address);
       setContractdata(contract);
       let tempbug_data = await contract.methods.SendBugReport().call();
@@ -76,7 +73,7 @@ const PatchRequestForm = () => {
     const patch_name = document.getElementById('Patch-Name').value;
     setName(patch_name)
     const deadline = document.getElementById('deadline').value;
-    //console.log(BugArr, FeatArr, patch_name, deadline);
+    console.log(BugArr, FeatArr, patch_name, deadline);
     const temp = BugArr.length + FeatArr.length;
     if (temp > 0 && patch_name.trim() != '' && deadline.trim() != '') {
       if (account.toLowerCase() == '0x47fb4385f5c205b59033d72330cd9e795626904c') {
@@ -86,6 +83,7 @@ const PatchRequestForm = () => {
         setTo(result.to);
         setTransactionHash(result.transactionHash);
         setGas(result.gasUsed);
+
       }
       else {
         alert('Transcation Unsuccessful! Admin account does not match');
@@ -98,33 +96,47 @@ const PatchRequestForm = () => {
 
   const handleSubmit = async () => {
     const UserTransction = {
-        account: account,
-        id: transactionHash,
-        description: 'Patch Requested :' + name,
-        from: from,
-        to: to,
-        gasUsed: gas,
-        email: info.email,
-        role: info.userType
+      account: account,
+      id: transactionHash,
+      description: 'Patch Requested :' + name,
+      from: from,
+      to: to,
+      gasUsed: gas,
+      email: info.email,
+      role: info.userType
     };
     console.log(UserTransction);
 
     const response = await fetch('http://localhost:2000/api/transcation', {
-        method: 'POST',
-        body: JSON.stringify(UserTransction),
-        headers: {
-            'Content-Type': 'application/json'
-        }
+      method: 'POST',
+      body: JSON.stringify(UserTransction),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     const json = await response.json();
-};
+  };
+  useEffect(() => {
+    if (transactionHash) {
+      const submitButton = document.getElementById("submit-button");
+      if (submitButton) {
+        submitButton.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [transactionHash]);
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    setCurrentDate(new Date().toISOString().split('T')[0]);
+  }, []);
 
   return (
-    < div className='container' >
+    < div className='container my-2' >
       <div className="row">
+        <h1 className="my-3">Patch Request</h1>
         <div className="col-md-6 table-responsive">
           <table className="table table-light table-striped mt-3" id="Bug-Table">
-            <thead className="table-primary">
+            <thead className="table-dark">
               <tr>
                 <th scope="col" style={{ width: '10%' }}>S.No</th>
                 <th scope="col" style={{ width: '50%' }}>Bugs Title</th>
@@ -152,7 +164,7 @@ const PatchRequestForm = () => {
         </div>
         <div className="col-md-6 table-responsive">
           <table className="table table-light table-striped mt-3" id="Feature-Table">
-            <thead className="table-primary">
+            <thead className="table-dark">
               <tr>
                 <th scope="col" style={{ width: '10%' }}>S.No</th>
                 <th scope="col" style={{ width: '50%' }}>Feature Title</th>
@@ -204,6 +216,7 @@ const PatchRequestForm = () => {
             id="deadline"
             data-target="#datetimepicker"
             placeholder="Select deadline"
+            min={currentDate}
           />
           <div className="input-group-text">
             <i className="fa fa-calendar"></i>
@@ -216,9 +229,9 @@ const PatchRequestForm = () => {
           <div className="col-12">
             <h2>Transaction Details</h2>
             <p>Transaction Hash: {transactionHash}</p>
-            <button type="submit" className="btn btn-primary mt-1" onClick={() => {
+            <button id="submit-button" type="submit" className="btn btn-primary mt-1" onClick={() => {
               handleSubmit()
-              //window.location.reload();
+              window.location.reload();
             }}>Submit</button>
           </div>
         </div>

@@ -24,7 +24,7 @@ const IntroductionPage = () => {
             complete transparency into the patch management process.
           </p>
           <div className="mt-5">
-            <Link to="/VerifyPatch">
+            <Link to="/verifypatch">
               <button className="btn btn-primary">Get Started</button>
             </Link>
           </div>

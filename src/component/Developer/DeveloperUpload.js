@@ -12,19 +12,33 @@ function BugReportDetails() {
     let [contractdata, setContractdata] = useState({});
     let [transactionHash, setTransactionHash] = useState("");
     let { ethereum } = window;
-    let [file,isFile] = useState(false);
+    let [file, isFile] = useState(false);
+
+    const [from, setFrom] = useState('');
+    const [to, setTo] = useState('');
+    const [gas, setGas] = useState('');
+    const info = JSON.parse(localStorage.getItem('Info'));
 
     useEffect(() => {
         async function Connection() {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
+            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
         }
         Connection();
     }, []);
+
+    useEffect(() => {
+        if (transactionHash) {
+            const submitButton = document.getElementById("submit-button");
+            if (submitButton) {
+                submitButton.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+    }, [transactionHash]);
 
     const SendPatch = () => {
         let obj = JSON.parse(localStorage.getItem("object"));
@@ -39,17 +53,44 @@ function BugReportDetails() {
             console.log(obj[0], obj[1], timestamp, fileData);
             document.getElementById('up').innerHTML = "Upload Time:";
             document.getElementById('upload-time').innerHTML = Time;
-            const result = await contractdata.methods.SetPatchFile(obj[2], fileData,Time).send({ from: account });
+            const result = await contractdata.methods.SetPatchFile(obj[2], fileData, Time).send({ from: account });
             setTransactionHash(result.transactionHash);
-            alert('Transcation Successful');
+            setFrom(result.from);
+            setTo(result.to);
+            setTransactionHash(result.transactionHash);
+            setGas(result.gasUsed);
+            //alert('Transcation Successful');
         }
     }
+
+    const handleSubmit = async () => {
+        const UserTransction = {
+            account: account,
+            id: transactionHash,
+            description: 'Patch Uploaded :' + obj[2],
+            from: from,
+            to: to,
+            gasUsed: gas,
+            email: info.email,
+            role: info.userType
+        };
+        console.log(UserTransction);
+
+        const response = await fetch('http://localhost:2000/api/transcation', {
+            method: 'POST',
+            body: JSON.stringify(UserTransction),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const json = await response.json();
+    };
 
     return (
         <div className="container my-5 py-3">
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title text-center">Bug Report Details</h2>
+                    <h2 className="card-title text-center">Patch Upload Details</h2>
                 </div>
                 <div className="card-body">
                     <div className="row">
@@ -65,14 +106,14 @@ function BugReportDetails() {
                                     <h5>Bugs Title:</h5>
                                 </label>
                                 <span id="bug-title" className="form-control-plaintext">
-                                    {obj[0].join('\n')}
+                                    {obj[0].join(' , ')}
                                 </span>
                             </div>
                             <div className="form-group mt-4">
                                 <label htmlFor="feature-title">
                                     <h5>Features Title:</h5>
                                 </label>
-                                <span id="feature-title" className="form-control-plaintext">{obj[1].join('\n')}</span>
+                                <span id="feature-title" className="form-control-plaintext">{obj[1].join(' , ')}</span>
                             </div>
                             <div className="form-group mt-4">
                                 <label htmlFor="feature-description">
@@ -90,7 +131,7 @@ function BugReportDetails() {
                             </div>
                             <div className="form-group">
                                 <div className="input-group mb-3 mt-3">
-                                    <input onChange={()=>isFile(true)} type="file" className="form-control" id="Patch-File" />
+                                    <input onChange={() => isFile(true)} type="file" className="form-control" id="Patch-File" />
                                     <label className="input-group-text" htmlFor="inputGroupFile02">Upload</label>
                                 </div>
                             </div>
@@ -102,9 +143,12 @@ function BugReportDetails() {
             {transactionHash && (
                 <div className="row mt-5">
                     <div className="col-12">
-                        <h2>Transaction Details</h2>
+                        <h2>Transaction Done</h2>
                         <p>Transaction Hash: {transactionHash}</p>
-                        <button type="submit" className="btn btn-primary mt-2" onClick={()=>{navigate('/UploadPatch')}}>New Upload</button>
+                        <button type="submit" className="btn btn-primary mt-2" onClick={() => {
+                            handleSubmit()
+                            navigate('/UploadPatch')
+                        }}>New Upload</button>
                     </div>
                 </div>
             )}

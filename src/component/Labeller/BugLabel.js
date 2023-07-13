@@ -26,7 +26,7 @@ const BugLabel = () => {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0xC73b335Daeb32f4df2635aA821A4B8532a18EC9c";
+            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
             let temp = await contract.methods.SendBugReport().call();
@@ -42,18 +42,17 @@ const BugLabel = () => {
     }, []);
 
     const SendBugReport = async () => {
-        const selectedBugs = data.filter((val, ind) => {
-            const priority_value = document.getElementById(`bug-priority${ind}`).value;
-            return priority_value !== '';
-        });
-        const bugArr = selectedBugs.map(val => val.bug_title);
-        const bugPriority = selectedBugs.map((val, ind) => {
-            const priority_value = document.getElementById(`bug-priority${ind}`).value;
-            return priority_value;
-        });
+        for (let i = 0; i < data.length; i++) {
+            const priority_value = document.getElementById('bug-priority'+ i).value;
+            if (priority_value !== '') {
+                bugArr.push(data[i].bug_title);
+                bugPriority.push(priority_value);
+            }
+        }
         setBugArr(bugArr);
         setBugPriority(bugPriority);
-        const result = await contractdata.methods.SetPrioritybug(bugArr, bugPriority).send({ from: account });
+        console.log(bugArr,bugPriority)
+        const result = await contractdata.methods.SetPrioritybug(bugArr,bugPriority).send({ from: account });
         setFrom(result.from);
         setTo(result.to);
         setTransactionHash(result.transactionHash);
@@ -69,7 +68,7 @@ const BugLabel = () => {
         const UserTransction = {
             account: account,
             id: transactionHash,
-            description: 'Feature Title :' + bugArr.join(', '),
+            description: 'Bug Title :' + bugArr.join(', '),
             from: from,
             to: to,
             gasUsed: gas,
@@ -87,9 +86,17 @@ const BugLabel = () => {
         });
         const json = await response.json();
     };
-
+    useEffect(() => {
+        if (transactionHash) {
+            const submitButton = document.getElementById("submit-button");
+            if (submitButton) {
+                submitButton.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+    }, [transactionHash]);
     return (
-        <div className="container table-responsive">
+        <div className="container table-responsive my-2">
+            <h1 className="my-3">Bug Label</h1>
             <table className="table table-light table-hover table-striped mt-3" id="Bugs-Label-Table">
                 <thead className="table-dark">
                     <tr>
@@ -125,7 +132,7 @@ const BugLabel = () => {
                     <div className="col-12">
                         <h2>Transaction Details</h2>
                         <p>Transaction Hash: {transactionHash}</p>
-                        <button type="submit" className="btn btn-primary mt-1" onClick={() => {
+                        <button id="submit-button" type="submit" className="btn btn-primary mt-1" onClick={() => {
                             handleSubmit();
                             window.location.reload()
                         }}>Submit</button>

@@ -17,7 +17,7 @@ const DownloadPatch = () => {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
+            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
             let temp = await contract.methods.Developer().call();
@@ -49,8 +49,9 @@ const DownloadPatch = () => {
 
     return (
         <div className="container table-responsive mt-2">
+            <h1 className="my-3">Download Patch</h1>
             <table className="table table-light table-striped table-hover" id="Deployed-Table">
-                <thead className="table-primary">
+                <thead className="table-dark">
                     <tr>
                         <th scope="col" style={{ width: '5%' }}>S.No</th>
                         <th scope="col" style={{ width: '15%' }}>Patch Name</th>
@@ -59,7 +60,7 @@ const DownloadPatch = () => {
                         <th scope="col" style={{ width: '15%' }}>Deployed Patch</th>
                     </tr>
                 </thead>
-                <tbody className="table-group-divider">
+                <tbody className="table-group-divider ">
                     {data.reverse().map((val, ind) => {
                         return (
                             <tr key={ind}>

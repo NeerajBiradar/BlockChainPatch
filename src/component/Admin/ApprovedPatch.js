@@ -1,9 +1,6 @@
 import React from "react";
 import Web3 from 'web3';
 import ABI from '../ABI/ABI';
-import 'jquery/dist/jquery.min.js';
-import "datatables.net-dt/js/dataTables.dataTables"
-import "datatables.net-dt/css/jquery.dataTables.min.css"
 import $ from 'jquery';
 import { useEffect, useState } from "react";
 
@@ -12,19 +9,24 @@ const ApprovedPatch = () => {
     let [contractdata, setContractdata] = useState({});
     let [data, setData] = useState([]);
     let { ethereum } = window;
+    const [from, setFrom] = useState('');
+    const [to, setTo] = useState('');
+    const [gas, setGas] = useState('');
+    const info = JSON.parse(localStorage.getItem('Info'));
+    const [name, setName] = useState("")
+    const [transactionHash, setTransactionHash] = useState("")
 
     useEffect(() => {
         async function Connection() {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
+            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
             let temp = await contract.methods.Developer().call();
-            temp = temp.filter((val, ind) => {
-                return val.check == "Approved" && val.deploy == 'not'
-            });
+            temp = temp.filter((val, ind) => val.check == "Approved" && val.deploy == 'not'
+            ).reverse()
             setData(temp);
             $(function () {
                 $('#Approved-Table').DataTable();
@@ -37,11 +39,15 @@ const ApprovedPatch = () => {
     async function handledeploy(name) {
         const timestamp = new Date();
         const Time = timestamp.toString();
-        // deploybutton.innerHTML = Time;
         if (account == '0x47fb4385f5c205b59033d72330cd9e795626904c') {
-            await contractdata.methods.SetDeploy(name, Time).send({ from: account });
-            //location.reload();
-            alert('Transcation Successful');
+            const result = await contractdata.methods.SetDeploy(name, Time).send({ from: account });
+            setName(name)
+            setTransactionHash(result.transactionHash);
+            setFrom(result.from);
+            setTo(result.to);
+            setTransactionHash(result.transactionHash);
+            setGas(result.gasUsed);
+
         }
         else {
             alert('Transcation Unsuccessful! Admin account does not match');
@@ -59,11 +65,42 @@ const ApprovedPatch = () => {
         // Simulate a click on the download link
         downloadLink.click();
     }
+    const handleSubmit = async () => {
+        const UserTransction = {
+            account: account,
+            id: transactionHash,
+            description: 'Patch Deployed :' + name,
+            from: from,
+            to: to,
+            gasUsed: gas,
+            email: info.email,
+            role: info.userType
+        };
+        console.log(UserTransction);
+
+        const response = await fetch('http://localhost:2000/api/transcation', {
+            method: 'POST',
+            body: JSON.stringify(UserTransction),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const json = await response.json();
+    };
+    useEffect(() => {
+        if (transactionHash) {
+            const submitButton = document.getElementById("submit-button");
+            if (submitButton) {
+                submitButton.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+    }, [transactionHash]);
 
     return (
         <div className="container table-responsive">
+            <h1 className="my-3">Approved Patch</h1>
             <table className="table table-light table-striped mt-3 table-hover" id="Approved-Table">
-                <thead className="table-primary">
+                <thead className="table-dark">
                     <tr>
                         <th scope="col" style={{ width: "5%" }}>S.No</th>
                         <th scope="col" style={{ width: "10%" }}>Patch Name</th>
@@ -74,7 +111,7 @@ const ApprovedPatch = () => {
                     </tr>
                 </thead>
                 <tbody className="table-group-divider">
-                    {data.reverse().map((val, ind) => {
+                    {data.map((val, ind) => {
                         return (
                             <tr key={ind}>
                                 <td>{ind + 1}</td>
@@ -109,6 +146,18 @@ const ApprovedPatch = () => {
                     })}
                 </tbody>
             </table>
+            {transactionHash && (
+                <div className="row mt-5">
+                    <div className="col-12">
+                        <h2>Transaction Done</h2>
+                        <p>Transaction Hash: {transactionHash}</p>
+                        <button id="submit-button" type="submit" className="btn btn-primary mt-1" onClick={() => {
+                            handleSubmit()
+                            window.location.reload();
+                        }}>Submit</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

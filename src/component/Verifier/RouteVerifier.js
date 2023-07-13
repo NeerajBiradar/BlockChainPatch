@@ -3,6 +3,7 @@ import VerifierNavbar from './VerifierNavbar';
 import Verify from './Verifier';
 import IntroductionPage from './VerifierHome';
 import LoginPage from '../Prelogin/LoginPage';
+import TransactionDetails from './Transcation';
 
 function VerifierRoute(props) {
     const handleLogin = (s) =>{
@@ -13,9 +14,10 @@ function VerifierRoute(props) {
             <Router>
                 <VerifierNavbar LoginState={handleLogin}/>
                 <Routes>
-                    <Route path='/Verifier' element={<IntroductionPage/>}/>
-                    <Route path='/VerifyPatch' element={<Verify/>} />
-                    <Route path='/Login' element={<LoginPage/>} />
+                    <Route path='/verifier' element={<IntroductionPage/>}/>
+                    <Route path='/verifypatch' element={<Verify/>} />
+                    <Route path='/login' element={<LoginPage/>} />
+                    <Route path='/transcations' element={<TransactionDetails/>}/>
                 </Routes>
             </Router>
         </div>

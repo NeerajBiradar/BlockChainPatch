@@ -25,7 +25,7 @@ const FeatureLabel = () => {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0xC73b335Daeb32f4df2635aA821A4B8532a18EC9c";
+            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
             let temp = await contract.methods.SendFeatureReport().call();
@@ -41,17 +41,16 @@ const FeatureLabel = () => {
     }, []);
 
     const SendFeatureReport = async () => {
-        const selectedFeatures = data.filter((val, ind) => {
-            const priority_value = document.getElementById(`feature-priority${ind}`).value;
-            return priority_value !== '';
-        });
-        const featArr = selectedFeatures.map(val => val.feat_title);
-        const featPriority = selectedFeatures.map((val, ind) => {
-            const priority_value = document.getElementById(`feature-priority${ind}`).value;
-            return priority_value;
-        });
+        for (let i = 0; i < data.length; i++) {
+            const priority_value = document.getElementById('feature-priority'+ i).value;
+            if (priority_value !== '') {
+                featArr.push(data[i].feat_title);
+                featPriority.push(priority_value);
+            }
+        }
         setFeatArr(featArr);
         setFeatPriority(featPriority);
+        console.log(featArr,featPriority)
         const result = await contractdata.methods.SetPriorityFeature(featArr, featPriority).send({ from: account });
         setTransactionHash(result.transactionHash);
         setFrom(result.from);
@@ -86,9 +85,18 @@ const FeatureLabel = () => {
         });
         const json = await response.json();
     };
+    useEffect(() => {
+        if (transactionHash) {
+            const submitButton = document.getElementById("submit-button");
+            if (submitButton) {
+                submitButton.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+    }, [transactionHash]);
 
     return (
-        <div className="container table-responsive">
+        <div className="container table-responsive my-2">
+            <h1 className="my-3">Feature Label</h1>
             <table className="table table-light table-hover table-striped mt-3" id="Features-Label-Table">
                 <thead className="table-dark">
                     <tr>
@@ -124,7 +132,7 @@ const FeatureLabel = () => {
                     <div className="col-12">
                         <h2>Transaction Details</h2>
                         <p>Transaction Hash: {transactionHash}</p>
-                        <button type="submit" className="btn btn-primary mt-1" onClick={() => {
+                        <button id="submit-button" type="submit" className="btn btn-primary mt-1" onClick={() => {
                             handleSubmit()
                             window.location.reload()
                         }}>Next Priority</button>

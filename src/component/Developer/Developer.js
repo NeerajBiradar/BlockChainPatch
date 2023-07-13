@@ -20,13 +20,11 @@ function DeveloperTable() {
       let accounts = await ethereum.request({ method: "eth_requestAccounts" });
       setAccount(accounts[0]);
       const web3 = new Web3(window.ethereum);
-      const Address = "0x8d3Ee0BE38C3F03a08aeFeB58A710d81c89534b5";
+      const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
       let contract = new web3.eth.Contract(ABI, Address);
       setContractdata(contract);
       let temp = await contract.methods.Developer().call();
-      temp = temp.filter((val, ind) => {
-        return val.patch_file == "0x64656661756c74"
-      });
+      temp = temp.filter((val, ind) => val.patch_file == "0x64656661756c74").reverse()
       console.log(temp, "Developer");
       setData(temp);
       $(function () {
@@ -40,6 +38,7 @@ function DeveloperTable() {
 
 
     <div className="container table-responsive">
+      <h1 className="my-3">Upload Patch</h1>
       <table className="table table-light table-striped mt-3 table-hover" id="Developer-Table">
         <thead className="table-dark">
           <tr>
@@ -51,7 +50,7 @@ function DeveloperTable() {
           </tr>
         </thead>
         <tbody className="table-group-divider">
-          {data.reverse().map((val, ind) => {
+          {data.map((val, ind) => {
             return (
               <tr key={ind}>
                 <td>{ind + 1}</td>
@@ -70,7 +69,7 @@ function DeveloperTable() {
                 <td>
                   <button className="btn btn-success mt-3" onClick={() => {
                     localStorage.setItem("object", JSON.stringify(val));
-                    navigate('/Upload')
+                    navigate('/upload')
                   }}>
                     Upload
                   </button>
