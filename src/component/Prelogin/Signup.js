@@ -18,7 +18,7 @@ const ImageAndForm = () => {
       password: password,
     };
 
-    const response = await fetch('http://localhost:2000/api/register', {
+    const response = await fetch('https://blockchainbackend.onrender.com/api/register', {
       method: 'POST',
       body: JSON.stringify(user),
       headers: {

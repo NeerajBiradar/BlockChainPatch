@@ -2,15 +2,14 @@ import { useState } from 'react'
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom'
 
-
 const LoginPage = (props) => {
     const navigate = useNavigate();
     const [email, SetEmail] = useState('')
     const [password, SetPassword] = useState('')
     const loginUser = async (e) => {
         e.preventDefault()
-        const response = await fetch('http://localhost:2000/api/login', {
-            method: 'POST',   
+        const response = await fetch('https://blockchainbackend.onrender.com/api/login', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
