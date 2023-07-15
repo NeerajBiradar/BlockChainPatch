@@ -7,7 +7,7 @@ const TransactionDetails = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetch('https://blockchainbackend.onrender.com/api/getTranscation');
+        const response = await fetch(process.env.REACT_APP_SERVER_LINK+'/api/getTranscation');
         let data = await response.json();
         data = data.filter((val) => val.email === info.email);
         setTransactions(data);

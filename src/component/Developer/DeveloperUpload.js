@@ -3,6 +3,7 @@ import Web3 from 'web3';
 import ABI from "../ABI/ABI";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Address from "../ABI/Address";
 
 function BugReportDetails() {
     let obj = JSON.parse(localStorage.getItem("object"));
@@ -24,7 +25,7 @@ function BugReportDetails() {
             let accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setAccount(accounts[0]);
             const web3 = new Web3(window.ethereum);
-            const Address = "0x54e6f321c3685A4Ca2DE4fFc3B42de99dD9433Ec";
+            
             let contract = new web3.eth.Contract(ABI, Address);
             setContractdata(contract);
         }
